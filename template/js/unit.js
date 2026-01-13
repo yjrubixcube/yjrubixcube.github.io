@@ -770,7 +770,7 @@ function mkTool(tbl) {
 	tbl.appendChild(node);
 }
 
-function renderForm(form, lvc_text, _super = false, hide = false, baseForm = null) {
+function renderForm(form, lvc_text, _talents = false, _super = false, hide = false, base=form) {
 	const info = my_cat.info;
 	if (layout === 2) {
 		const tbl = document.createElement('table');
@@ -1198,7 +1198,7 @@ function renderForm(form, lvc_text, _super = false, hide = false, baseForm = nul
 			e.classList.add('f');
 			e.contentEditable = true;
 			e.inputMode = 'numeric';
-			e._form = form;
+			e._form = base;
 			e._val = i * 10;
 			e.style.cursor = 'pointer';
 			e.addEventListener('focus', handleFocus);
@@ -1208,18 +1208,18 @@ function renderForm(form, lvc_text, _super = false, hide = false, baseForm = nul
 				const tbl = t.parentNode.parentNode;
 				let num = t.textContent.match(/\d+/);
 				if (num) {
-					// latest change: talentAccumulationFix
-					const newLevel = parseInt(num[0]);
-					const tempForm = tbl._baseForm.clone();
-					tempForm.level = newLevel;
-
-					my_cat.talents && tempForm.applyTalents(custom_talents);
-					if (_super)
-						tempForm.applySuperTalents(custom_super_talents);
-
-					t._val = newLevel;
-					t.textContent = `Lv${newLevel}`;
-					updateValues(tempForm, tbl);
+					const F = t._form.clone();
+					F.level = parseInt(num[0]);
+					num = F.level;
+					t._val = num;
+					t.textContent = `Lv${num}`;
+					if (_talents) {
+						F.applyTalents(custom_talents);
+						if (_super) {
+							F.applySuperTalents(custom_super_talents);
+						}
+					}
+					updateValues(F, tbl);
 				} else {
 					t.textContent = t._val;
 				}
@@ -1983,9 +1983,10 @@ function calcCost(event) {
 	const TF = my_cat.forms[2].clone();
 	TF.applyTalents(custom_talents);
 	updateTable(TF, tf_tbl);
-	if (t._super)
+	if (tf_tbl_s) {
 		TF.applySuperTalents(custom_super_talents);
-	tf_tbl_s && updateTable(TF, tf_tbl_s);
+		updateTable(TF, tf_tbl_s);
+	}
 	if (tf4_tbl) {
 		const TF4 = my_cat.forms[3].clone();
 		TF4.applyTalents(custom_talents);
@@ -2250,11 +2251,12 @@ function renderUnitPage() {
 		mkTool(tbl);
 	}
 	if (my_cat.talents) {
-		const TF = my_cat.forms[2].clone();
+		const form = my_cat.forms[2];
+		const TF = form.clone();
 		const [names, has_super] = rednerTalentInfos(my_cat.talents);
 		renderTalentCosts(names, my_cat.talents);
 		TF.applyTalents(custom_talents);
-		tf_tbl = renderForm(TF, '本能完全升滿的數值表格', false, true, my_cat.forms[2]);
+		tf_tbl = renderForm(TF, '本能完全升滿的數值表格', true, false, true, form);
 		tables.push(['三階+本能數值表格', tf_tbl]);
 		mkTool(tf_tbl);
 		if (has_super) {
@@ -2262,20 +2264,15 @@ function renderUnitPage() {
 			const [names, _] = rednerTalentInfos(my_cat.talents, true, true);
 			renderTalentCosts(names, my_cat.talents, true);
 			F.applySuperTalents(custom_super_talents);
-			tf_tbl_s = renderForm(F, '超本能完全升滿的數值表格', true, true, my_cat.forms[2]);
+			tf_tbl_s = renderForm(F, '超本能完全升滿的數值表格', true, true, true, form);
 			tables.push(['三階+超本能數值表格', tf_tbl_s]);
 			mkTool(tf_tbl_s);
 		}
 		if (my_cat.forms.length == 4) {
 			const F = my_cat.forms[3].clone();
-			tf4_raw_tbl = renderForm(F, '四階：', false, false, my_cat.forms[3]);
-			tables.push(['四階數值表格', tf4_raw_tbl]);
-			mkTool(tf4_raw_tbl);
-
-			const F_talent = F.clone();
-			F_talent.applyTalents(custom_talents);
-			tf4_tbl = renderForm(F_talent, '超本能完全升滿的數值表格', true, false, my_cat.forms[3]);
-			tables.push(['四階+超本能數值表格', tf4_tbl]);
+			F.applyTalents(custom_talents);
+			tf4_tbl = renderForm(F, '四階：', true, true, false, my_cat.forms[3]);
+			tables.push(['四階+本能數值表格', tf4_tbl]);
 			mkTool(tf4_tbl);
 		}
 	}
