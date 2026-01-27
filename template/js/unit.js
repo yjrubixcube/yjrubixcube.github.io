@@ -983,7 +983,6 @@ function renderForm(form, lvc_text, _talents = false, _super = false, hide = fal
 			tr.appendChild(td);
 			tbody.appendChild(tr);
 			let N, O;
-			const sums = [95, 75, 50, 165, 125, 75, 235, 175, 100, 150, 250, 285, 215, 225, 355];
 			const T = my_cat.talents;
 			let I = 0;
 			custom_talents = [];
@@ -994,11 +993,12 @@ function renderForm(form, lvc_text, _talents = false, _super = false, hide = fal
 					super_talent = true;
 					continue;
 				}
+				const maxLv = T[i + 1] || 1;
 				N = units_scheme.talents.names[T[i]];
 				tr = document.createElement('tr');
 				td = document.createElement('td');
 				td.classList.add('F');
-				custom_talents.push(td.L = td.M = T[i + 1] || 1);
+				custom_talents.push(td.L = td.M = maxLv);
 				td.textContent = 'Lv' + td.L;
 				td.C = T[i + 11] - 1;
 				td.contentEditable = true;
@@ -1012,7 +1012,7 @@ function renderForm(form, lvc_text, _talents = false, _super = false, hide = fal
 				td.colSpan = 4;
 				tr.appendChild(td);
 				td = document.createElement('td');
-				td.textContent = sums[O.C];
+				td.textContent = units_scheme.talents.costs[O.C].slice(0, maxLv).reduce((rv, x) => rv + x, 0);
 				td.classList.add('F');
 				O.N = td;
 				O.addEventListener('blur', handleBlur);
@@ -1044,11 +1044,12 @@ function renderForm(form, lvc_text, _talents = false, _super = false, hide = fal
 						continue;
 					if (!T[i + 13])
 						continue;
+					const maxLv = T[i + 1] || 1;
 					N = units_scheme.talents.names[T[i]];
 					tr = document.createElement('tr');
 					td = document.createElement('td');
 					td.classList.add('F');
-					custom_super_talents.push(td.L = td.M = T[i + 1] || 1);
+					custom_super_talents.push(td.L = td.M = maxLv);
 					td.textContent = 'Lv' + td.L;
 					td.C = T[i + 11] - 1;
 					td.contentEditable = true;
@@ -1062,7 +1063,7 @@ function renderForm(form, lvc_text, _talents = false, _super = false, hide = fal
 					td.colSpan = 4;
 					tr.appendChild(td);
 					td = document.createElement('td');
-					td.textContent = sums[O.C];
+					td.textContent = units_scheme.talents.costs[O.C].slice(0, maxLv).reduce((rv, x) => rv + x, 0);
 					td.classList.add('F');
 					O.N = td;
 					O.addEventListener('blur', handleBlur);
